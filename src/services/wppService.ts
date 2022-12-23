@@ -7,7 +7,7 @@ interface orcamentoPayload {
   codigoProdutos: string[];
 }
 
-const sendTestMessage = async () => {
+const sendTestMessage = async (req: Request, res: Response) => {
   const options = {
     method: 'POST',
     url: 'https://graph.facebook.com/v15.0/106932025595467/messages',
@@ -31,13 +31,14 @@ const sendTestMessage = async () => {
 
   try {
     const response = await axios.request(options)
-    return response.data
+    res.status(200).send(response.data);
   } catch (error) {
-    throw error
+    res.status(500).send(error)
   }
 }
 
-const enviarOrcamento = async (payload: orcamentoPayload) => {
+//TODO:  mudar mensagem para enviar orçamento com resposta rápida
+const enviarOrcamento = async (req: Request, res: Response) => {
 
   const testString = `Olá qowihdoqhwoidhqowdhqowhdolqwhdoqwhdoqihwdoiqwhdoqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq Seu orçamento foi enviado com sucesso. teste teste teste`
 
@@ -61,12 +62,13 @@ const enviarOrcamento = async (payload: orcamentoPayload) => {
 
   try {
     const response = await axios.request(options)
-    return response.data
+    res.status(200).send(response.data);
   } catch (error) {
-    throw error
+    res.status(500).send(error)
   }
 }
 
+//TODO: Adicionar endpoint para ficar recebendo respostas das mensagens enviadas
 const webhookAuth = async (req: Request, res: Response) => {
    const verify_token = process.env.WPP_WEBHOOK_KEY;
    
