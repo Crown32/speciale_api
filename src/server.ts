@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import * as dotenv from 'dotenv'
+import routes from './routes/route';
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 });
 
 // Routes 
+app.use('/api/v1', routes);
 
 // Error handling 
 app.use((req, res, next) => {
