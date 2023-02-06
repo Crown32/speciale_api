@@ -15,4 +15,8 @@ router.get('/webhookauth', (req, res) => {
   service.webhookAuth(req, res);
 });
 
+router.get('/testmongo', (req, res) => {
+  service.testMongo(req, res);
+});
+
 export default router;
