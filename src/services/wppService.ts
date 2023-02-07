@@ -58,9 +58,9 @@ export class WppService {
         "to": orcamentoPayload.numeroTelefone,
         "type": "template",
         "template": {
-          "name": "orcamento_first_message",
+          "name": "hello_world",
           "language": {
-            "code": "pt_BR"
+            "code": "en_US"
           },
         }
       }
@@ -192,8 +192,8 @@ Clique no botão abaixo para aceitar ou recusar este orçamento.`
 
   async webhook(req: Request, res: Response) {
     const body = req.body;
-    const messageResponse = body.entry[0].changes[0].value.messages[0].button.text
-    const messageId = messageResponse.messages[0].id
+    const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
+    const messageId = body.entry[0].changes[0].value.messages[0].id
 
     if(messageResponse === "Sim"){
       this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
