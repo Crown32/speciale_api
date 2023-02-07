@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { MongoService } from './mongoService';
 import { OrcamentoPayload } from '../models/orcamentoPayload';
 import { OrcamentoStatus } from '../models/orcamentoStatus';
+import { BlingService } from './blingService';
+import { BlingProduct } from '../models/blingProduct';
 
 export class WppService {
 
@@ -40,7 +42,7 @@ export class WppService {
     }
   }
 
-  async orcamentoConfirmMessage(req: Request, res: Response) {
+  async orcamentoConfirmMessage(req: Request, res: Response) {    
 
     const orcamentoPayload: OrcamentoPayload = req.body;
     orcamentoPayload.status = OrcamentoStatus.CONTACTED;
@@ -67,7 +69,7 @@ export class WppService {
     }
 
     try {
-
+      
       const response = await axios.request(options)
 
       orcamentoPayload.messageId = response.data.messages[0].id;
@@ -83,13 +85,13 @@ export class WppService {
   }
 
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) {    
-    const message = `Aqui está seu orçamento 😁
 
-- 5x limpadores de parabrisa -> R$75,99
-- 5x limpadores de parabrisa -> R$75,99 
-- 5x limpadores de parabrisa -> R$75,99
-    
-Clique no botão abaixo para aceitar ou recusar este orçamento.`
+    const blingService = new BlingService();
+
+    const blingProducts: BlingProduct[] = await blingService.getProdutosByCodigo(orcamentoPayload.produtos);
+
+    const message = `Olá, ${orcamentoPayload.nome}! Segue abaixo o orçamento solicitado: \n\n
+    ${blingProducts.map(p => `${p.descricao} - R$ ${p.preco}`).join('\n')} \n\n `;
 
     const options = {
       method: 'POST',

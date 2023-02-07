@@ -83,7 +83,10 @@ export class BlingService{
   //   return response.data;
   // }
 
-  async getProdutosByCodigo(produtos : Produtos[]){
+  async getProdutosByCodigo(produtos ?: Produtos[]){
+
+    if(!produtos) return [];
+
     const bling = config.blingConnection();
 
     const data = await bling.products().all();
