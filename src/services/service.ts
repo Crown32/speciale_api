@@ -1,13 +1,15 @@
 import { Request, Response} from 'express';
-import wppService from '../services/wppService';
+import { WppService } from './wppService';
 import config from '../configs/config';
+
+const wppService = new WppService();
 
 const testWpp = async (req: Request, res: Response) => {
     await wppService.sendTestMessage(req, res);
 };
 
 const enviarOrcamento = async (req: Request, res: Response) => {
-  const data = await wppService.enviarOrcamento(req, res);
+  const data = await wppService.enviarOrcamento({});
 }
 
 const webhookAuth = async (req: Request, res: Response) => {

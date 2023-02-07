@@ -1,7 +1,10 @@
+import { Produtos } from './produtos';
+
 export interface OrcamentoPayload {
-  wamid?: string;
+  messageId?: string;
   nome?: string;
   numeroTelefone?: string;
-  codigoProdutos?: string[];
+  produtos?: Produtos[];
   closed?: boolean;
+  status?: string;
 }

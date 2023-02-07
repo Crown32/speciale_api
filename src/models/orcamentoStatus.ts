@@ -1,0 +1,6 @@
+export enum OrcamentoStatus {
+  CONTACTED = 'CONTACTED',
+  ORCAMENTO_SENT = 'ORCAMENTO_SENT',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
