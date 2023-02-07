@@ -1,16 +1,12 @@
 import axios from 'axios';
 import { Request, Response} from 'express';
-
-interface orcamentoPayload {
-  nome: string;
-  numeroTelefone: string;
-  codigoProdutos: string[];
-}
+import mongoService from './mongoService';
+import { OrcamentoPayload } from '../models/orcamentoPayload';
 
 const sendTestMessage = async (req: Request, res: Response) => {
   const options = {
     method: 'POST',
-    url: 'https://graph.facebook.com/v15.0/106932025595467/messages',
+    url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + process.env.WPP_API_KEY
@@ -37,14 +33,54 @@ const sendTestMessage = async (req: Request, res: Response) => {
   }
 }
 
-//TODO:  mudar mensagem para enviar orçamento com resposta rápida
+const orcamentoConfirmMessage =async (req: Request, res: Response) => {
+
+  const orcamentoPayload: OrcamentoPayload = req.body;  
+
+  const options = {
+    method: 'POST',
+    url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+    },
+    data: {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      "to": orcamentoPayload.numeroTelefone,
+      "type": "template",
+      "template": {
+        "name": "orcamento_first_message",
+        "language": {
+          "code": "pt_BR"
+        },
+      }
+    }
+  }
+
+  try {
+
+    const response = await axios.request(options)
+
+    orcamentoPayload.wamid = response.data.messages[0].id;
+
+    mongoService.saveOrcamento(orcamentoPayload);
+
+    res.status(200).send(response.data);
+
+  } catch (error) {
+    res.status(500).send(error)
+  }
+
+}
+
 const enviarOrcamento = async (req: Request, res: Response) => {
 
   const testString = `Olá qowihdoqhwoidhqowdhqowhdolqwhdoqwhdoqihwdoiqwhdoqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq Seu orçamento foi enviado com sucesso. teste teste teste`
 
   const options = {
     method: 'POST',
-    url: 'https://graph.facebook.com/v15.0/106932025595467/messages',
+    url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + process.env.WPP_API_KEY
@@ -68,7 +104,6 @@ const enviarOrcamento = async (req: Request, res: Response) => {
   }
 }
 
-//TODO: Adicionar endpoint para ficar recebendo respostas das mensagens enviadas
 const webhookAuth = async (req: Request, res: Response) => {
    const verify_token = process.env.WPP_WEBHOOK_KEY;
    
@@ -94,5 +129,6 @@ const webhookAuth = async (req: Request, res: Response) => {
 export default {
   sendTestMessage,
   enviarOrcamento,
-  webhookAuth
+  webhookAuth,
+  orcamentoConfirmMessage
 }
