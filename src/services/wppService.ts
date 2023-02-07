@@ -58,9 +58,9 @@ export class WppService {
         "to": orcamentoPayload.numeroTelefone,
         "type": "template",
         "template": {
-          "name": "hello_world",
+          "name": "orcamento_first_message",
           "language": {
-            "code": "en_US"
+            "code": "pt_BR"
           },
         }
       }
@@ -131,10 +131,8 @@ Clique no botão abaixo para aceitar ou recusar este orçamento.`
 
     try {
       const response = await axios.request(options)
-      console.log(response.data);
       return response.data;
     } catch (error) {
-      console.log(error)
       return error;
     }
   }
@@ -195,11 +193,10 @@ Clique no botão abaixo para aceitar ou recusar este orçamento.`
     const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
     const messageId = body.entry[0].changes[0].value.messages[0].id
 
-    if(messageResponse === "Sim"){
+    if(messageResponse === "Sim") {
       this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
         if (orcamento) {
           const orcamentoPayload = orcamento as OrcamentoPayload;
-  
           if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
             this.enviarOrcamento(orcamentoPayload).then((response: any) => {
               orcamentoPayload.status = OrcamentoStatus.ORCAMENTO_SENT;
