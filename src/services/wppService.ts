@@ -5,7 +5,6 @@ import { OrcamentoPayload } from '../models/orcamentoPayload';
 import { OrcamentoStatus } from '../models/orcamentoStatus';
 import { BlingService } from './blingService';
 import { BlingProduct } from '../models/blingProduct';
-
 export class WppService {
 
   constructor() { }
@@ -47,6 +46,13 @@ export class WppService {
     const orcamentoPayload: OrcamentoPayload = req.body;
     orcamentoPayload.status = OrcamentoStatus.CONTACTED;
 
+    if(!orcamentoPayload.produtos){
+      res.status(400).send('Produtos não informados');
+      return;
+    }
+      
+    const totalQuantidade = orcamentoPayload.produtos.reduce((a, b) => a + (b.quantidade || 0), 0);
+
     const options = {
       method: 'POST',
       url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
@@ -64,6 +70,26 @@ export class WppService {
           "language": {
             "code": "pt_BR"
           },
+          "components": [
+            {
+              "type": "header",
+              "parameters": [
+                {
+                  "type": "text",
+                  "text": orcamentoPayload.nome
+                },
+              ]
+            },
+            {
+              "type": "body",
+              "parameters": [
+                {
+                  "type": "text",
+                  "text": totalQuantidade
+                },
+              ]
+            }
+          ]
         }
       }
     }
@@ -79,6 +105,8 @@ export class WppService {
       res.status(200).send(response.data);
 
     } catch (error) {
+      console.log(error);
+      
       res.status(500).send(error)
     }
 
@@ -88,10 +116,13 @@ export class WppService {
 
     const blingService = new BlingService();
 
-    const blingProducts: BlingProduct[] = await blingService.getProdutosByCodigo(orcamentoPayload.produtos);
+    const blingProducts: any[] = await blingService.getProdutosByCodigo(orcamentoPayload.produtos);
+    console.log(blingProducts);
 
-    const message = `Olá, ${orcamentoPayload.nome}! Segue abaixo o orçamento solicitado: \n\n
-    ${blingProducts.map(p => `${p.descricao} - R$ ${p.preco}`).join('\n')} \n\n `;
+    const message = `Olá, ${orcamentoPayload.nome}! Segue abaixo o orçamento solicitado:\n
+    ${blingProducts.map(p => `5x ${p.descricao} - R$ ${Number(p.preco).toFixed(2)}`).join('\n')} \n\n 
+    Total: R$ ${Number(blingProducts.reduce((a, b) => a + Number(b.preco), 0)).toFixed(2)} \n\n
+    Deseja confirmar o orçamento?`;
 
     const options = {
       method: 'POST',
@@ -195,7 +226,7 @@ export class WppService {
     const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
     const messageId = body.entry[0].changes[0].value.messages[0].id
 
-    if(messageResponse === "Sim") {
+    if(String(messageResponse).toLowerCase() === 'sim') {
       this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
         if (orcamento) {
           const orcamentoPayload = orcamento as OrcamentoPayload;
