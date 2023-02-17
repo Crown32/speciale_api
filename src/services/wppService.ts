@@ -313,6 +313,120 @@ export class WppService {
     }
   }
 
+  async alertaOrcamentoRejeitado(propostaComercialId: string, orcamentoPayload: OrcamentoPayload) {
+
+    const options = {
+      method: 'POST',
+      url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+      },
+      data: {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": "5531991524560",
+        "type": "template",
+        "template": {
+          "name": "alerta_orcamento_recusado",
+          "language": {
+            "code": "pt_BR"
+          },
+          "components": [
+            {
+              "type": "body",
+              "parameters": [
+                {
+                  "type": "text",
+                  "text": orcamentoPayload.nome
+                },
+                {
+                  "type": "text",
+                  "text": orcamentoPayload.numeroTelefone ? Utils.formatNumber(orcamentoPayload.numeroTelefone) : orcamentoPayload.numeroTelefone
+                },
+                {
+                  "type": "text",
+                  "text": propostaComercialId
+                },
+              ]
+            }
+          ]
+        }
+      }
+    }
+
+    try {
+      const response = await axios.request(options)
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async orcamentoFirstMessageRejected(orcamentoPayload: OrcamentoPayload) {
+    orcamentoPayload.status = OrcamentoStatus.CONTACTED;
+
+    const options = {
+      method: 'POST',
+      url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+      },
+      data: {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": orcamentoPayload.numeroTelefone,
+        "type": "template",
+        "template": {
+          "name": "orcamento_first_message_reject",
+          "language": {
+            "code": "pt_BR"
+          },
+        }
+      }
+    }
+
+    try {
+      const response = await axios.request(options)
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async orcamentoRejected(orcamentoPayload: OrcamentoPayload) {
+    orcamentoPayload.status = OrcamentoStatus.CONTACTED;
+
+    const options = {
+      method: 'POST',
+      url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+      },
+      data: {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": orcamentoPayload.numeroTelefone,
+        "type": "template",
+        "template": {
+          "name": "orcamento_rejected",
+          "language": {
+            "code": "pt_BR"
+          },
+        }
+      }
+    }
+
+    try {
+      const response = await axios.request(options)
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  }
+
 
   async webhookAuth(req: Request, res: Response) {
     const verify_token = process.env.WPP_WEBHOOK_KEY;
@@ -337,6 +451,7 @@ export class WppService {
     const messageId = body.entry[0].changes[0].value.messages[0].id
 
     if(String(messageResponse).toLowerCase() === 'sim') {
+      //Aceito
       this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
         if (orcamento) {
           const orcamentoPayload = orcamento as OrcamentoPayload;
@@ -344,8 +459,9 @@ export class WppService {
             this.enviarOrcamento(orcamentoPayload).then(async (response: any) => {
               orcamentoPayload.status = OrcamentoStatus.ORCAMENTO_SENT;
               orcamentoPayload.messageId = response.messages[0].id;
-              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
+              orcamentoPayload.propostaBlingId = blingResponse[0].id;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
               console.log(blingResponse);
               res.status(200).send(response);
@@ -354,8 +470,9 @@ export class WppService {
             this.orcamentoAcceptedMessage(orcamentoPayload).then(async (response: any) => {
               orcamentoPayload.status = OrcamentoStatus.ACCEPTED;
               orcamentoPayload.messageId = response.messages[0].id;
-              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               const blingResponse: any = await this.blingService.createPedidoDeVenda(orcamentoPayload);
+              orcamentoPayload.vendaBlingId = blingResponse[0].idPedido;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               await this.alertaOrcamentoAceito(blingResponse[0].idPedido, orcamentoPayload);
               res.status(200).send("Orçamento aceito");
             });
@@ -366,8 +483,31 @@ export class WppService {
         }
       });
     }else{
-      //Enviar uma mensagem padrão de desculpas e agradecimento
-      res.status(200).send("Mensagem não é de orçamento");
+      //Rejeitado
+      this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
+        if (orcamento) {
+          const orcamentoPayload = orcamento as OrcamentoPayload;
+          if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
+            this.orcamentoFirstMessageRejected(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.REJECTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              res.status(200).send(response);
+            });
+          } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
+            this.orcamentoRejected(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.REJECTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              await this.alertaOrcamentoRejeitado(orcamentoPayload.propostaBlingId?.toString() || '', orcamentoPayload);
+              res.status(200).send("Orçamento aceito");
+            });
+          }
+  
+        } else {
+          res.status(200).send("Orcamento não encontrado");
+        }
+      });
     }
   }
 }

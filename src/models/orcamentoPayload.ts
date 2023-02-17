@@ -7,4 +7,6 @@ export interface OrcamentoPayload {
   produtos?: Produtos[];
   closed?: boolean;
   status?: string;
+  propostaBlingId?: Number;
+  vendaBlingId?: string;
 }
