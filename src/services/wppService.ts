@@ -4,12 +4,19 @@ import { MongoService } from './mongoService';
 import { OrcamentoPayload } from '../models/orcamentoPayload';
 import { OrcamentoStatus } from '../models/orcamentoStatus';
 import { BlingService } from './blingService';
-import { BlingProduct } from '../models/blingProduct';
+import { Utils } from '../utils/utils';
+import { IOrderResponse } from 'bling-erp-api/lib/entities/orders';
 export class WppService {
 
   constructor() { }
 
   mongoService = new MongoService();
+  blingService = new BlingService();
+
+  formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'BRL',
+  });
 
   async sendTestMessage(req: Request, res: Response) {
     const options = {
@@ -112,17 +119,19 @@ export class WppService {
 
   }
 
-  async enviarOrcamento(orcamentoPayload: OrcamentoPayload) {    
+  async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
-    const blingService = new BlingService();
+    const blingProducts: any[] = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);
 
-    const blingProducts: any[] = await blingService.getProdutosByCodigo(orcamentoPayload.produtos);
-    console.log(blingProducts);
+    blingProducts.forEach(p => {
+      if(orcamentoPayload.produtos){
+        let produtoOrcamento = orcamentoPayload.produtos.find(x => x.codigo == p.codigo);
+        p.quantidade = produtoOrcamento ? produtoOrcamento.quantidade : 1;
+        p.preco = p.preco * p.quantidade;
+      }            
+    });
 
-    const message = `Olá, ${orcamentoPayload.nome}! Segue abaixo o orçamento solicitado:\n
-    ${blingProducts.map(p => `5x ${p.descricao} - R$ ${Number(p.preco).toFixed(2)}`).join('\n')} \n\n 
-    Total: R$ ${Number(blingProducts.reduce((a, b) => a + Number(b.preco), 0)).toFixed(2)} \n\n
-    Deseja confirmar o orçamento?`;
+    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(p => `- ${p.quantidade}x ${p.descricao} -> ${this.formatter.format(parseFloat(p.preco)).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((a, b) => a + Number(b.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
 
     const options = {
       method: 'POST',
@@ -204,6 +213,107 @@ export class WppService {
 
   }
 
+  async alertaOrcamentoSolicitado(propostaComercialId: number, orcamentoPayload: OrcamentoPayload) {
+
+    const options = {
+      method: 'POST',
+      url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+      },
+      data: {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": "5531991524560",
+        "type": "template",
+        "template": {
+          "name": "alerta_solicitacao_orcamento",
+          "language": {
+            "code": "pt_BR"
+          },
+          "components": [
+            {
+              "type": "body",
+              "parameters": [
+                {
+                  "type": "text",
+                  "text": orcamentoPayload.nome
+                },
+                {
+                  "type": "text",
+                  "text": orcamentoPayload.numeroTelefone ? Utils.formatNumber(orcamentoPayload.numeroTelefone) : orcamentoPayload.numeroTelefone
+                },
+                {
+                  "type": "text",
+                  "text": propostaComercialId
+                },
+              ]
+            }
+          ]
+        }
+      }
+    }
+
+    try {
+      const response = await axios.request(options)
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async alertaOrcamentoAceito(propostaComercialId: string, orcamentoPayload: OrcamentoPayload) {
+
+    const options = {
+      method: 'POST',
+      url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+      },
+      data: {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": "5531991524560",
+        "type": "template",
+        "template": {
+          "name": "alerta_orcamento_aceito",
+          "language": {
+            "code": "pt_BR"
+          },
+          "components": [
+            {
+              "type": "body",
+              "parameters": [
+                {
+                  "type": "text",
+                  "text": orcamentoPayload.nome
+                },
+                {
+                  "type": "text",
+                  "text": orcamentoPayload.numeroTelefone ? Utils.formatNumber(orcamentoPayload.numeroTelefone) : orcamentoPayload.numeroTelefone
+                },
+                {
+                  "type": "text",
+                  "text": propostaComercialId
+                },
+              ]
+            }
+          ]
+        }
+      }
+    }
+
+    try {
+      const response = await axios.request(options)
+      return response.data;
+    } catch (error) {
+      return error;
+    }
+  }
+
+
   async webhookAuth(req: Request, res: Response) {
     const verify_token = process.env.WPP_WEBHOOK_KEY;
 
@@ -231,17 +341,22 @@ export class WppService {
         if (orcamento) {
           const orcamentoPayload = orcamento as OrcamentoPayload;
           if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
-            this.enviarOrcamento(orcamentoPayload).then((response: any) => {
+            this.enviarOrcamento(orcamentoPayload).then(async (response: any) => {
               orcamentoPayload.status = OrcamentoStatus.ORCAMENTO_SENT;
               orcamentoPayload.messageId = response.messages[0].id;
               this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
+              await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
+              console.log(blingResponse);
               res.status(200).send(response);
             });
           } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
-            this.orcamentoAcceptedMessage(orcamentoPayload).then((response: any) => {
+            this.orcamentoAcceptedMessage(orcamentoPayload).then(async (response: any) => {
               orcamentoPayload.status = OrcamentoStatus.ACCEPTED;
               orcamentoPayload.messageId = response.messages[0].id;
               this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              const blingResponse: any = await this.blingService.createPedidoDeVenda(orcamentoPayload);
+              await this.alertaOrcamentoAceito(blingResponse[0].idPedido, orcamentoPayload);
               res.status(200).send("Orçamento aceito");
             });
           }
