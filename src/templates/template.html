@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="imgs/orcamento_logo_nav.png">
+  <title>Proposta comercial</title>
+  <style>
+    h4 {
+    padding-bottom: 2px;
+    margin-bottom: 0;
+    text-align: left
+}
+
+p {
+    text-align: left
+}
+
+#container {
+    border: none
+}
+
+#relatorio-head,.relatorio-head {
+    display: block
+}
+
+#relatorio-titulo {
+    color: #000;
+    font-size: 16pt;
+    font-weight: 700
+}
+
+#relatorio-subtitulo1 {
+    padding-top: 5px;
+    color: #000;
+    font-size: 10pt;
+    font-weight: 400
+}
+
+#relatorio-subtitulo2 {
+    color: #000;
+    font-size: 10pt;
+    font-weight: 400
+}
+
+#header-container {
+    display: none
+}
+
+#menu-container,#top-menu,#menu-novo,.box-side,.new-box-side,.box-logo {
+    display: none
+}
+
+#top-area {
+    display: none
+}
+
+#footer {
+    display: none
+}
+
+#content {
+    width: 100%
+}
+
+.titulo-tela {
+    display: none
+}
+
+.no-print {
+    display: none
+}
+
+h1 {
+    display: none
+}
+
+#mini-pesquisa-area {
+    display: none
+}
+
+#panel {
+    display: none
+}
+
+#filtros-relatorios {
+    display: none
+}
+
+.commands {
+    display: none
+}
+
+.side {
+    display: none
+}
+
+.frame {
+    width: 100%
+}
+
+#header {
+    float: left;
+    width: 100%
+}
+
+#titulo {
+    font-size: 12pt;
+    font-weight: 700;
+    padding: 10px 0
+}
+
+body,td {
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 8pt
+}
+
+a:link,a:active,a:visited {
+    color: #00c
+}
+
+img {
+    border: 0
+}
+
+#datatable-area {
+    padding: 0!important
+}
+
+#datatable,.datatable {
+    width: 100%;
+    padding-bottom: 4px
+}
+
+#datatable table,.datatable table {
+    font-size: 9pt;
+    border-collapse: collapse;
+    color: #000;
+    width: 100%
+}
+
+#datatable th,.datatable th {
+    font-weight: 700;
+    height: 25px;
+    padding-top: 5px;
+    text-align: left;
+    border-bottom: 1px solid #ccc
+}
+
+#datatable td,.datatable td {
+    text-align: left;
+    border-bottom: #ccc 1px solid;
+    vertical-align: middle;
+    padding: 3px
+}
+
+#datatable tr.div,.datatable tr.div {
+    background: #eee
+}
+
+input.white {
+    margin-top: 25px;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    border: #ccc 1px solid;
+    font-weight: 700;
+    padding: 5px 15px
+}
+
+input.white:hover {
+    cursor: pointer;
+    background-color: #e1f4a8
+}
+
+.totaisRelatorio {
+    margin-top: 10px;
+    width: 100%;
+    text-align: left
+}
+
+table.listaRecibo {
+    font-size: 9pt;
+    border-collapse: collapse;
+    background: #fff;
+    color: #000;
+    border-top: solid 1px #000;
+    border-left: solid 1px #000;
+    border-right: solid 1px #000
+}
+
+th.listaRecibo {
+    border-bottom: 1px solid #000;
+    background: #ebebeb
+}
+
+td.listaRecibo {
+    border-bottom: 1px solid #000
+}
+
+.totaisRecibo {
+    font-size: 10pt;
+    float: right;
+    padding: 7px;
+    text-align: right;
+    border: solid 1px #000
+}
+
+h5 {
+    font-size: 10pt;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 5px;
+    text-align: left
+}
+
+.rodapeRecibo {
+    text-align: left;
+    margin-top: 15px
+}
+
+.fonteMaior {
+    font-weight: 700;
+    font-size: 12px
+}
+
+.linha_grossa {
+    border-bottom: solid 2px #000;
+    padding-top: 2px;
+    padding-bottom: 2px
+}
+
+.linha_fina {
+    border-bottom: solid 1px #000;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    width: 100%
+}
+
+.fonteDestaque {
+    font-size: 12pt;
+    font-weight: 700
+}
+
+span.fonteMaior {
+    font-size: 11pt;
+    font-weight: 400
+}
+
+.fonteMenor {
+    font-size: 8pt
+}
+
+.cabecalho {
+    padding-bottom: 15px
+}
+
+.rodape {
+    padding-top: 10px
+}
+
+.content {
+    padding: 10px
+}
+
+table.cabecalhoReceita {
+    border: solid 1px #000;
+    border-collapse: collapse
+}
+
+table.cabecalhoReceita th {
+    border-bottom: solid 1px #000;
+    font-size: 10pt;
+    font-weight: 700
+}
+
+table.cabecalhoReceita td {
+    padding-left: 8px;
+    font-size: 8pt
+}
+
+table.fonteNormal td {
+    font-size: 10pt
+}
+
+.tituloCentro {
+    font-size: 11pt;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: underline;
+    padding-bottom: 10px;
+    width: 100%
+}
+
+.pleasewait {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1
+}
+
+.modalDialog_transparentDivs {
+    filter: alpha(opacity=40);
+    opacity: .4;
+    background-color: #aaa;
+    z-index: 10;
+    position: absolute
+}
+
+.modalDialog_contentDiv {
+    border: 3px solid #000;
+    padding: 12px;
+    z-index: 999;
+    position: absolute;
+    background-color: #fff
+}
+
+.modalDialog_contentDiv_shadow {
+    z-index: 11;
+    position: absolute;
+    background-color: #555;
+    filter: alpha(opacity=30);
+    opacity: .3
+}
+
+.diverro {
+    margin-top: 10px;
+    color: red;
+    width: 150px
+}
+
+.boxy-wrapper {
+    position: absolute
+}
+
+.boxy-wrapper.fixed {
+    position: fixed
+}
+
+.boxy-modal-blackout {
+    position: absolute;
+    background-color: #444;
+    left: 0;
+    top: 0
+}
+
+.boxy-wrapper {
+    empty-cells: show
+}
+
+.boxy-wrapper .top-left,.boxy-wrapper .top-right,.boxy-wrapper .bottom-right,.boxy-wrapper .bottom-left {
+    width: 2px;
+    height: 2px;
+    padding: 0
+}
+
+.boxy-wrapper .top-left {
+    height: 2px;
+    background-color: #000
+}
+
+.boxy-wrapper .top-right {
+    height: 2px;
+    background-color: #000
+}
+
+.boxy-wrapper .bottom-right {
+    height: 2px;
+    background-color: #000
+}
+
+.boxy-wrapper .bottom-left {
+    height: 2px;
+    background-color: #000
+}
+
+.boxy-wrapper .top,.boxy-wrapper .bottom {
+    height: 2px;
+    background-color: #000;
+    padding: 0
+}
+
+.boxy-wrapper .left,.boxy-wrapper .right {
+    width: 2px;
+    background-color: #000;
+    padding: 0
+}
+
+.boxy-wrapper .title-bar {
+    padding: 6px;
+    position: relative
+}
+
+.boxy-wrapper .title-bar.dragging {
+    cursor: move
+}
+
+.boxy-wrapper .title-bar h2 {
+    font-size: 14pt;
+    color: #000;
+    margin: 0;
+    padding: 0;
+    font-weight: 700
+}
+
+.boxy-wrapper .title-bar .close {
+    color: #000;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 90%;
+    line-height: 1
+}
+
+.boxy-inner {
+    background-color: #fdfdfd;
+    padding: 0
+}
+
+.boxy-content {
+    padding: 20px
+}
+
+.boxy-wrapper .question {
+    width: 350px;
+    min-height: 80px
+}
+
+.boxy-wrapper .answers {
+    text-align: right
+}
+
+.close {
+    background-image: url(images/close.gif);
+    height: 17px;
+    width: 17px
+}
+
+.close:hover {
+    background-color: #fff
+}
+
+.ac_results {
+    z-index: 999999;
+    position: absolute
+}
+
+.caption {
+    margin: 0;
+    margin-left: 1px;
+    margin-top: 6px;
+    font-size: 8pt;
+    font-weight: 700;
+    color: #333
+}
+
+input[readOnly] {
+    background-color: #f5f5f5
+}
+
+.readonly {
+    background-color: #f5f5f5
+}
+
+#controls-popup {
+    padding-top: 15px;
+    text-align: right
+}
+
+#datatable th.right {
+    text-align: right
+}
+
+#datatable td.right {
+    text-align: right
+}
+
+#datatable td table.item-rel td {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    line-height: 11pt
+}
+
+.divBorda {
+    padding: 8px;
+    border-spacing: 0;
+    border: 1px solid #000
+}
+
+#slot_os .divBorda {
+    word-break: break-word
+}
+
+.grid {
+    width: 100%;
+    padding-bottom: 0;
+    border-spacing: 0;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    border-left: 1px solid #000
+}
+
+.gridH {
+    width: 100%;
+    min-height: 100%;
+    padding-bottom: 0;
+    border-spacing: 0;
+    border-bottom: 1px solid #000;
+    border-left: 1px solid #000
+}
+
+.grid table,.gridH table {
+    border-collapse: collapse;
+    color: #000;
+    width: 100%
+}
+
+.grid th {
+    font-weight: 700;
+    height: 25px;
+    padding-top: 5px;
+    text-align: left;
+    border-right: 1px solid #000;
+    background-color: #f0f0f0;
+    font-size: 9pt;
+    padding-left: 5px;
+    padding-right: 5px
+}
+
+.gridH th {
+    font-weight: 700;
+    height: 30px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: left;
+    border-right: 1px solid #000;
+    border-top: 1px solid #000;
+    background-color: #f0f0f0;
+    font-size: 9pt;
+    padding-left: 5px;
+    padding-right: 5px
+}
+
+.grid td,.gridH td {
+    text-align: left;
+    border-top: 1px solid #000;
+    border-right: 1px solid #000;
+    vertical-align: middle;
+    padding: 3px 0;
+    font-size: 9pt;
+    padding-left: 5px;
+    padding-right: 5px
+}
+
+.grid td.right {
+    text-align: right
+}
+
+.grid th.right {
+    text-align: right
+}
+
+.grid tr.div {
+    background: #eee
+}
+
+.top-jd {
+    display: none
+}
+
+.numero-destaque {
+    color: #000;
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 0 0 3px;
+    padding: 0 0 2px
+}
+
+.titulo-1024 {
+    color: #000;
+    font-size: 11pt;
+    font-weight: 700;
+    margin-bottom: 40px
+}
+
+.resultado tr td {
+    line-height: 24px
+}
+
+.resultado tr td.right,#datatable .resultado tr td.right {
+    text-align: right;
+    padding-right: 10px
+}
+
+.resultado tr th.right {
+    text-align: right;
+    padding-right: 10px
+}
+
+.info,#info {
+    margin: 0 0 0 1px;
+    padding: 0;
+    font-weight: 400;
+    border: 0;
+    color: #444;
+    font-size: 7.5pt
+}
+
+div.info p {
+    margin-top: 0
+}
+
+table.prontuario {
+    border: none;
+    margin: 0;
+    padding: 0;
+    border-collapse: collapse;
+    width: 100%;
+    text-align: left
+}
+
+table.prontuario th {
+    font-size: 8pt;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+    padding: 4px 5px;
+    background: #fff;
+    font-weight: 400
+}
+
+table.prontuario td {
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    background-color: #fff;
+    padding: 4px 5px;
+    font-size: 9pt;
+    color: #111
+}
+
+table.prontuario td.none {
+    border: 0
+}
+
+#ui-datepicker-div,.ui-datepicker,.ui-datepicker-header,.ui-datepicker-calendar {
+    display: none
+}
+
+.anexo-imagens img {
+    max-width: 48%;
+    float: left;
+    margin-left: 10px
+}
+
+.display_none {
+    display: none
+}
+
+.invisivel {
+    visibility: hidden;
+    display: none;
+    height: 0;
+    clear: both
+}
+
+#edicao-container {
+    padding: 0!important
+}
+
+.fixed-table-container table th div {
+    width: auto!important
+}
+
+.btn-box-menu {
+    display: none
+}
+
+table.reportMargin th:not(:last-child) {
+    padding-right: 10px
+}
+
+table.reportMargin td:not(:last-child) {
+    padding-right: 10px!important
+}
+
+.font_bold {
+    font-weight: 700;
+    font-size: 12px
+}
+
+.fixed-table-container-inner {
+    height: auto!important
+}
+
+.titulo {
+    color: #000;
+    font-size: 16pt;
+    font-weight: 700
+}
+
+#pivotableOutput {
+    height: auto!important
+}
+
+#pivotableOutput .pvtUi tbody>tr:nth-child(1),#pivotableOutput .pvtAxisContainer,#pivotableOutput .pvtVals {
+    display: none
+}
+
+#content-filter,#btn-imprimir,.box-side-oculta,#search-left-area,#search-left-area.open,.badge-transparent .clr {
+    display: none!important
+}
+
+#container.filter-left #lista {
+    padding-left: 0!important
+}
+
+.relatorio-footer {
+    display: block
+}
+
+.hide-on-print {
+    display: none
+}
+
+.container-relatorios .mdc-layout-grid {
+    margin: 0!important;
+    padding: 0!important
+}
+
+  </style>
+</head>
+
+<body>
+  <div id="slot_orcamento" style="display: block;">
+    <div style="width: 700px; text-align: center;">
+      <div id="content-area">
+        <div>
+          <table width="100%">
+            <tbody>
+              <tr>
+                <td style="text-align: left;"><img
+                  src="imgs/orcamento_logo.png"
+                  style="max-height: 112px; max-width: 200px;" class="center-image img-responsive"></td>
+                <td style="text-align: right;">Speciale Clean<br>Avenida Jair Rodrigues Vale, Nº 230, Loja<br>32260080 -
+                  Contagem, MG<br>Telefone: (31) 3361-3132<br>CNPJ: 10.858.844/0001-21<br></td>
+              </tr>
+            </tbody>
+          </table>
+          <h2 style="text-align:center;">Proposta Nº 10</h2>
+        </div>
+        <h4>Para</h4>
+        <table style="text-align: left; width:100%;">
+          <tbody>
+            <tr>
+              <td>
+                <div class="divBorda" style="height: 75px;"><br> <br><br></div>
+              </td>
+              <td width="20px"></td>
+              <td width="30%" valign="top">
+                <table class="gridH" style="height: 93px; padding:0;">
+                  <tbody>
+                    <tr>
+                      <th>Número da Proposta</th>
+                      <td>10</td>
+                    </tr>
+                    <tr>
+                      <th>Data</th>
+                      <td>23/02/2023</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p></p>
+        <div style="text-align:left;">
+          <h4>Itens da proposta comercial</h4>
+          <div id="divItens">
+            <table class="grid">
+              <tbody>
+                <tr>
+                  <th>Imagem</th>
+                  <th style="width:40%;">Descrição do produto/serviço</th>
+                  <th>Código</th>
+                  <th class="right">Un</th>
+                  <th class="right">Qtd.</th>
+                  <th class="right">Preço lista.</th>
+                  <th class="right">Desconto %</th>
+                  <th class="right">IPI % </th>
+                  <th class="right">Preço un.</th>
+                  <th class="right">Preço total</th>
+                </tr>
+                <tr>
+                  <td class="center"></td>
+                  <td style="word-break: break-all;">PRODUTO_TESTE</td>
+                  <td class="left" style="white-space: nowrap;">PRODUTO_TESTE</td>
+                  <td class="right">Un</td>
+                  <td class="right">10,00000</td>
+                  <td class="right">0,0000</td>
+                  <td class="right">0,0000</td>
+                  <td width="10%" class=" right">0,00</td>
+                  <td class="right">10.000,0000</td>
+                  <td class="right">0,00</td>
+                </tr>
+                <tr>
+                  <td class="center"></td>
+                  <td style="word-break: break-all;">GLIZZ 500ML</td>
+                  <td class="left" style="white-space: nowrap;">0000000000147</td>
+                  <td class="right">UN</td>
+                  <td class="right">5,00000</td>
+                  <td class="right">0,0000</td>
+                  <td class="right">0,0000</td>
+                  <td width="10%" class=" right">0,00</td>
+                  <td class="right">10.000.000,0000</td>
+                  <td class="right">0,00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <table class="grid" style="margin-top: 20px; table-layout: fixed;">
+          <tbody>
+            <tr>
+              <th style="text-align: right;">Nº de Itens</th>
+              <th style="text-align: right;">Soma das Qtdes</th>
+              <th style="text-align: right;">Total outros itens</th>
+              <th style="text-align: right;">Desconto total dos itens</th>
+              <th style="text-align: right;">Total dos itens</th>
+              <th style="text-align: right;">Frete</th>
+              <th style="text-align: right;">Total da proposta</th>
+            </tr>
+            <tr>
+              <td style="text-align: right;">2,00</td>
+              <td style="text-align: right;">15</td>
+              <td style="text-align: right;">0,00</td>
+              <td style="text-align: right;">0,00</td>
+              <td style="text-align: right;">999.999.999,99</td>
+              <td style="text-align: right;">0,00</td>
+              <td style="text-align: right;">999.999.999,99</td>
+            </tr>
+          </tbody>
+        </table><br>
+        <div id="assinatura" style="text-align:left;">
+          <table>
+            <tbody>
+              <tr>
+                <td>Atenciosamente,</td>
+              </tr>
+              <tr>
+                <td>Departamento de vendas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
