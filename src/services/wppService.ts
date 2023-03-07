@@ -442,6 +442,9 @@ export class WppService {
     const messageResponse = body.entry[0].changes[0].value.messages[0]    
     const messageId = body.entry[0].changes[0].value.messages[0].context.id
 
+    //FIXME: REMOVER ANTES DE SUBIR PARA PROD
+    this.mongoService.saveTestes(messageResponse);
+
     if((messageResponse.button && String(messageResponse.button.text).toLowerCase() === 'sim') || (messageResponse.interactive.button_reply && String(messageResponse.interactive.button_reply.text).toLowerCase() === 'sim')){
       //Aceito
       this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
