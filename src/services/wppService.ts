@@ -424,10 +424,69 @@ export class WppService {
   }
   
   async webhook(req: Request, res: Response) {
-    console.log(req.body);
-    return res.status(200).send("EVENT_RECEIVED");
-  }
+    const body = req.body;
+    const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
+    const messageId = body.entry[0].changes[0].value.messages[0].id
 
+    if(String(messageResponse).toLowerCase() === 'sim') {
+      //Aceito
+      this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
+        if (orcamento) {
+          const orcamentoPayload = orcamento as OrcamentoPayload;
+          if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
+            this.enviarOrcamento(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.ORCAMENTO_SENT;
+              orcamentoPayload.messageId = response.messages[0].id;
+              // const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
+              // orcamentoPayload.propostaBlingId = blingResponse[0].id;
+              // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              // await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
+              res.status(200).send("EVENT_RECEIVED");
+            });
+          } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
+            this.orcamentoAcceptedMessage(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.ACCEPTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              // const blingResponse: any = await this.blingService.createPedidoDeVenda(orcamentoPayload);
+              // orcamentoPayload.vendaBlingId = blingResponse[0].idPedido;
+              // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              // await this.alertaOrcamentoAceito(blingResponse[0].idPedido, orcamentoPayload);
+              res.status(200).send("Orçamento aceito");
+            });
+          }
+
+        } else {
+          res.status(200).send("Orcamento não encontrado");
+        }
+      });
+    }else{
+      //Rejeitado
+      this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
+        if (orcamento) {
+          const orcamentoPayload = orcamento as OrcamentoPayload;
+          if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
+            this.orcamentoFirstMessageRejected(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.REJECTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              res.status(200).send(response);
+            });
+          } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
+            this.orcamentoRejected(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.REJECTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              await this.alertaOrcamentoRejeitado(orcamentoPayload.propostaBlingId?.toString() || '', orcamentoPayload);
+              res.status(200).send("Orçamento aceito");
+            });
+          }
+
+        } else {
+          res.status(200).send("Orcamento não encontrado");
+        }
+      });
+    }
+  }
 }
 
 
