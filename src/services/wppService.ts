@@ -425,6 +425,12 @@ export class WppService {
   
   async webhook(req: Request, res: Response) {
     const body = req.body;
+
+    if(!body.entry[0].changes[0].value.messages){
+      console.log("Mensagem não é do tipo resposta de botão");
+      res.status(200).send("EVENT_RECEIVED");
+    }
+
     const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
     const messageId = body.entry[0].changes[0].value.messages[0].id
 
@@ -441,6 +447,7 @@ export class WppService {
               // orcamentoPayload.propostaBlingId = blingResponse[0].id;
               // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               // await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
+              console.log("Orçamento enviado");
               res.status(200).send("EVENT_RECEIVED");
             });
           } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
@@ -451,12 +458,14 @@ export class WppService {
               // orcamentoPayload.vendaBlingId = blingResponse[0].idPedido;
               // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               // await this.alertaOrcamentoAceito(blingResponse[0].idPedido, orcamentoPayload);
-              res.status(200).send("Orçamento aceito");
+              console.log("Orçamento aceito");
+              res.status(200).send("EVENT_RECEIVED");
             });
           }
 
         } else {
-          res.status(200).send("Orcamento não encontrado");
+          console.log("Orçamento não encontrado");
+          res.status(200).send("EVENT_RECEIVED");
         }
       });
     }else{
@@ -469,7 +478,8 @@ export class WppService {
               orcamentoPayload.status = OrcamentoStatus.REJECTED;
               orcamentoPayload.messageId = response.messages[0].id;
               this.mongoService.updateOrcamento(messageId, orcamentoPayload);
-              res.status(200).send(response);
+              console.log("Contato rejeitado");
+              res.status(200).send("EVENT_RECEIVED");
             });
           } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
             this.orcamentoRejected(orcamentoPayload).then(async (response: any) => {
@@ -477,12 +487,14 @@ export class WppService {
               orcamentoPayload.messageId = response.messages[0].id;
               this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               await this.alertaOrcamentoRejeitado(orcamentoPayload.propostaBlingId?.toString() || '', orcamentoPayload);
-              res.status(200).send("Orçamento aceito");
+              console.log("Orçamento rejeitado");
+              res.status(200).send("EVENT_RECEIVED");
             });
           }
 
         } else {
-          res.status(200).send("Orcamento não encontrado");
+          console.log("Não encontrou o orçamento");
+          res.status(200).send("EVENT_RECEIVED");
         }
       });
     }
