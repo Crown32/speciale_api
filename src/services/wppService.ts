@@ -426,6 +426,8 @@ export class WppService {
   async webhook(req: Request, res: Response) {
     const body = req.body;
 
+    console.log(body.entry[0].changes[0].value.messages);
+
     if(!body.entry[0].changes[0].value.messages || !body.entry[0].changes[0].value.messages[0]){
       console.log("Mensagem não é do tipo resposta de botão");
       res.status(200).send("EVENT_RECEIVED");
@@ -445,7 +447,7 @@ export class WppService {
               orcamentoPayload.messageId = response.messages[0].id;
               // const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
               // orcamentoPayload.propostaBlingId = blingResponse[0].id;
-              // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               // await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
               console.log("Orçamento enviado");
               res.status(200).send("EVENT_RECEIVED");
@@ -456,7 +458,7 @@ export class WppService {
               orcamentoPayload.messageId = response.messages[0].id;
               // const blingResponse: any = await this.blingService.createPedidoDeVenda(orcamentoPayload);
               // orcamentoPayload.vendaBlingId = blingResponse[0].idPedido;
-              // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               // await this.alertaOrcamentoAceito(blingResponse[0].idPedido, orcamentoPayload);
               console.log("Orçamento aceito");
               res.status(200).send("EVENT_RECEIVED");
