@@ -426,11 +426,10 @@ export class WppService {
   async webhook(req: Request, res: Response) {
     const body = req.body;
 
-    console.log(body.entry[0].changes[0].value.messages);
-
-    if(!body.entry[0].changes[0].value.messages || !body.entry[0].changes[0].value.messages[0]){
+    if(!body.entry[0].changes[0].value.messages || !body.entry[0].changes[0].value.messages[0].button){
       console.log("Mensagem não é do tipo resposta de botão");
       res.status(200).send("EVENT_RECEIVED");
+      return;
     }
 
     const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
