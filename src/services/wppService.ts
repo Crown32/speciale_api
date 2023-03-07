@@ -95,6 +95,9 @@ export class WppService {
 
     const blingProducts: any[] = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);
 
+    console.log("PRODUTOS PUROS: "+blingProducts.toString());
+    
+
     blingProducts.forEach(p => {
       if(orcamentoPayload.produtos){
         let produtoOrcamento = orcamentoPayload.produtos.find(x => x.codigo == p.codigo);
@@ -103,7 +106,7 @@ export class WppService {
       }            
     });
 
-    console.log(blingProducts);
+    console.log("PRODUTOS FORMATADOS: "+blingProducts.toLocaleString());
 
     const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(p => `- ${p.quantidade}x ${p.descricao} -> ${this.formatter.format(parseFloat(p.preco)).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((a, b) => a + Number(b.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
 
@@ -429,7 +432,7 @@ export class WppService {
     const body = req.body;
 
     if(!body.entry[0].changes[0].value.messages || !body.entry[0].changes[0].value.messages[0].button){
-      console.log(!body.entry[0].changes[0].value.messages);
+      console.log(body.entry[0].changes[0].value.messages);
       console.log("Mensagem não é do tipo resposta de botão");
       res.status(200).send("EVENT_RECEIVED");
       return;
