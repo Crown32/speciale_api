@@ -445,7 +445,7 @@ export class WppService {
     //FIXME: REMOVER ANTES DE SUBIR PARA PROD
     this.mongoService.saveTestes(messageResponse);
 
-    if((messageResponse.button && String(messageResponse.button.text).toLowerCase() === 'sim') || (messageResponse.interactive.button_reply && String(messageResponse.interactive.button_reply.text).toLowerCase() === 'sim')){
+    if((messageResponse.button && String(messageResponse.button.text).toLowerCase() === 'sim') || (messageResponse.interactive.button_reply && String(messageResponse.interactive.button_reply.title).toLowerCase() === 'sim')){
       //Aceito
       this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
         if (orcamento) {
