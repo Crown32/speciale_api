@@ -6,6 +6,7 @@ import { OrcamentoStatus } from '../models/orcamentoStatus';
 import { BlingService } from './blingService';
 import { Utils } from '../utils/utils';
 import { Config } from '../configs/config';
+import { BlingReturnProduct } from '../models/blingReturnProduct';
 export class WppService {
 
   constructor() { }
@@ -93,20 +94,19 @@ export class WppService {
   //Mensagem antiga de enviar orçamento -> Nova é de PDF
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
-    const blingProducts: any[] = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);    
-
-    this.mongoService.saveTestes(blingProducts);
-    console.log(blingProducts);
-
-    blingProducts.forEach(p => {
+    const blingProducts: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);   
+    
+    blingProducts.retorno.produtos.forEach(({produto}: BlingReturnProduct) => {
       if(orcamentoPayload.produtos){
-        let produtoOrcamento = orcamentoPayload.produtos.find(x => x.codigo == p.codigo);
-        p.quantidade = produtoOrcamento ? produtoOrcamento.quantidade : 1;
-        p.preco = p.preco * p.quantidade;
+        let produtoOrcamento = orcamentoPayload.produtos.find(x => x.codigo == produto.codigo);
+        if(produtoOrcamento){
+          produto.quantidade = produtoOrcamento.quantidade ? produtoOrcamento.quantidade : 1;
+          produto.preco = produto.preco * produto.quantidade;
+        }
       }            
     });
 
-    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(p => `- ${p.quantidade}x ${p.descricao} -> ${this.formatter.format(parseFloat(p.preco)).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((a, b) => a + Number(b.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
+    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.retorno.produtos.map(({produto}: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.retorno.produtos.reduce((total:number, {produto}:BlingReturnProduct) => total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
 
     const options = {
       method: 'POST',
