@@ -425,6 +425,7 @@ export class WppService {
   
   async webhook(req: Request, res: Response) {
     console.log(req.body);
+    return res.status(200).send("EVENT_RECEIVED");
   }
 
 }
