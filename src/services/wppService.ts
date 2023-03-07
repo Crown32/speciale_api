@@ -441,7 +441,10 @@ export class WppService {
     };
 
     this.mongoService.saveOrcamento(orcamentoPayload);
+
+    res.status(200).send({ message: "ok" });
   };    
+
 }
 
 /* TODO: Criar a nova função de webhook, vai continuar com a primeira msg de confirmação de envio, mas a próxima será a de pdf de orçamento
