@@ -12,6 +12,10 @@ router.get('/webhook', async (req, res) => {
     wppService.webhookAuth(req, res);
 });    
 
+router.post('/webhook', async (req, res) => {
+    wppService.webhookMessage(req, res);
+});
+
 router.post('/enviarorcamento', (req, res) => {
   wppService.orcamentoConfirmMessage(req, res);
 });

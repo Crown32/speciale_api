@@ -18,6 +18,7 @@ export class WppService {
     currency: 'BRL',
   });
 
+  //Mensagem de confirmação de solicitação de orçamento
   async orcamentoConfirmMessage(req: Request, res: Response) {    
 
     const orcamentoPayload: OrcamentoPayload = req.body;
@@ -89,6 +90,7 @@ export class WppService {
 
   }
 
+  //Mensagem antiga de enviar orçamento -> Nova é de PDF
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
     const blingProducts: any[] = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);
@@ -149,6 +151,7 @@ export class WppService {
     }
   }
 
+  //Mensagem de agradecimento por aceitar o orçamento
   async orcamentoAcceptedMessage(orcamentoPayload: OrcamentoPayload) {
     
     orcamentoPayload.status = OrcamentoStatus.CONTACTED;
@@ -183,6 +186,7 @@ export class WppService {
 
   }
 
+  //Mensagem de alerta para o vendedor de quando um cliente solicita um orçamento
   async alertaOrcamentoSolicitado(propostaComercialId: number, orcamentoPayload: OrcamentoPayload) {
 
     const options = {
@@ -233,6 +237,7 @@ export class WppService {
     }
   }
 
+  //Mensagem de alerta para o vendedor quando o cliente aceita o orçamento
   async alertaOrcamentoAceito(propostaComercialId: string, orcamentoPayload: OrcamentoPayload) {
 
     const options = {
@@ -283,6 +288,7 @@ export class WppService {
     }
   }
 
+  //Mensagem de alerta para o vendedor quando o cliente rejeita o orçamento
   async alertaOrcamentoRejeitado(propostaComercialId: string, orcamentoPayload: OrcamentoPayload) {
 
     const options = {
@@ -333,6 +339,7 @@ export class WppService {
     }
   }
 
+  //Mensaem de solicitação de orçamento recusada
   async orcamentoFirstMessageRejected(orcamentoPayload: OrcamentoPayload) {
     orcamentoPayload.status = OrcamentoStatus.CONTACTED;
 
@@ -365,6 +372,7 @@ export class WppService {
     }
   }
 
+  //Mensagem de orçamento rejeitado após o primeiro contato
   async orcamentoRejected(orcamentoPayload: OrcamentoPayload) {
     orcamentoPayload.status = OrcamentoStatus.CONTACTED;
 
@@ -415,6 +423,25 @@ export class WppService {
     }
   }
 
+  async webhookMessage(req: Request, res: Response) {
+    //create test orcamentoPayload
+    const orcamentoPayload: OrcamentoPayload = {
+      nome: "Teste",
+      numeroTelefone: "5531991524560",
+      status: OrcamentoStatus.CONTACTED,
+      produtos: [
+        {
+          codigo: "1",
+          nome: "Teste",
+          quantidade: 1,
+        }
+      ],
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    this.mongoService.saveOrcamento(orcamentoPayload);
+  };    
 }
 
 /* TODO: Criar a nova função de webhook, vai continuar com a primeira msg de confirmação de envio, mas a próxima será a de pdf de orçamento
