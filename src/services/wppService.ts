@@ -440,9 +440,15 @@ export class WppService {
       updated_at: new Date(),
     };
 
-    this.mongoService.saveOrcamento(orcamentoPayload);
+    try {
+      const response = await this. mongoService.saveOrcamento(orcamentoPayload);
 
-    res.status(200).send({ message: "ok" });
+      console.log(response);
+
+      res.status(200).send({ message: "ok" });
+    } catch (error) {
+      res.status(500).send({ message: "error" });
+    }
   };    
 
 }
