@@ -19,7 +19,7 @@ export class WppService {
   });
 
   //Mensagem de confirmação de solicitação de orçamento
-  async orcamentoConfirmMessage(req: Request, res: Response) {    
+  async orcamentoConfirmMessage(req: Request, res: Response) {   
 
     const orcamentoPayload: OrcamentoPayload = req.body;
     orcamentoPayload.status = OrcamentoStatus.CONTACTED;
@@ -422,36 +422,73 @@ export class WppService {
       }
     }
   }
+  
+  async webhook(req: Request, res: Response) {
+    const body = req.body;
+    const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
+    const messageId = body.entry[0].changes[0].value.messages[0].id
 
-  async webhookMessage(req: Request, res: Response) {
-    //create test orcamentoPayload
-    const orcamentoPayload: OrcamentoPayload = {
-      nome: "Teste",
-      numeroTelefone: "5531991524560",
-      status: OrcamentoStatus.CONTACTED,
-      produtos: [
-        {
-          codigo: "1",
-          nome: "Teste",
-          quantidade: 1,
+    if(String(messageResponse).toLowerCase() === 'sim') {
+      //Aceito
+      this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
+        if (orcamento) {
+          const orcamentoPayload = orcamento as OrcamentoPayload;
+          if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
+            this.enviarOrcamento(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.ORCAMENTO_SENT;
+              orcamentoPayload.messageId = response.messages[0].id;
+              // const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
+              // orcamentoPayload.propostaBlingId = blingResponse[0].id;
+              // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              // await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
+              res.status(200).send(response);
+            });
+          } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
+            this.orcamentoAcceptedMessage(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.ACCEPTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              // const blingResponse: any = await this.blingService.createPedidoDeVenda(orcamentoPayload);
+              // orcamentoPayload.vendaBlingId = blingResponse[0].idPedido;
+              // this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              // await this.alertaOrcamentoAceito(blingResponse[0].idPedido, orcamentoPayload);
+              res.status(200).send("Orçamento aceito");
+            });
+          }
+
+        } else {
+          res.status(200).send("Orcamento não encontrado");
         }
-      ],
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+      });
+    }else{
+      //Rejeitado
+      this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
+        if (orcamento) {
+          const orcamentoPayload = orcamento as OrcamentoPayload;
+          if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
+            this.orcamentoFirstMessageRejected(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.REJECTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              res.status(200).send(response);
+            });
+          } else if (orcamentoPayload.status === OrcamentoStatus.ORCAMENTO_SENT) {
+            this.orcamentoRejected(orcamentoPayload).then(async (response: any) => {
+              orcamentoPayload.status = OrcamentoStatus.REJECTED;
+              orcamentoPayload.messageId = response.messages[0].id;
+              this.mongoService.updateOrcamento(messageId, orcamentoPayload);
+              await this.alertaOrcamentoRejeitado(orcamentoPayload.propostaBlingId?.toString() || '', orcamentoPayload);
+              res.status(200).send("Orçamento aceito");
+            });
+          }
 
-    try {
-      const response = await this. mongoService.saveOrcamento(orcamentoPayload);
-
-      console.log(response);
-
-      res.status(200).send({ message: "ok" });
-    } catch (error) {
-      res.status(500).send({ message: "error" });
+        } else {
+          res.status(200).send("Orcamento não encontrado");
+        }
+      });
     }
-  };    
-
+  }
 }
+
 
 /* TODO: Criar a nova função de webhook, vai continuar com a primeira msg de confirmação de envio, mas a próxima será a de pdf de orçamento
 * Mas caso não tenha um dos produtos no estoque, enviar na msg debaixo de confirmação avisando que não temos o produto em estoque

@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.use('/api', router);
 
 app.get('/', (req, res) => {
-    res.send('Server is operational!');
+    res.status(200).send('Server is operational!');
 });
 
 // Error handling 

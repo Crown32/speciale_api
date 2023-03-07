@@ -13,7 +13,7 @@ router.get('/webhook', async (req, res) => {
 });    
 
 router.post('/webhook', async (req, res) => {
-    wppService.webhookMessage(req, res);
+    wppService.webhook(req, res);
 });
 
 router.post('/enviarorcamento', (req, res) => {
