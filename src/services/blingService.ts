@@ -11,16 +11,20 @@ export class BlingService{
 
     if(!produtos) return [];
 
-    const bling = this.config.blingConnection();
-
     const promisses = produtos.map(async (produto) => {    
       const url = `https://bling.com.br/Api/v2/produto/${produto.codigo}/json&?estoque=S&apikey=${process.env.BLING_API_KEY}`
-      const response = await axios.get(url);      
-      return response.data;
+      return axios.get(url);
     });
     
-    const produtosSelecionados = await Promise.all(promisses);
+    const axiosResponse = await Promise.all(promisses).catch(err => {
+      console.log(err);
+      return [];
+    });
 
+    const produtosSelecionados = axiosResponse.map((response) => {
+      return response.data.retorno.produtos[0].produto;
+    });
+    
     return produtosSelecionados;
   }
 

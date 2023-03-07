@@ -95,11 +95,12 @@ export class WppService {
   //Adicionar aviso de falta de estoque -> Implementar para PDF no futuro
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
-    const blingReturn: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos); 
+    const blingProducts: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos); 
+
+    console.log(blingProducts);
     
-    const blingProducts = blingReturn[0].retorno.produtos;
     
-    blingProducts.forEach(({produto}: BlingReturnProduct) => {
+    blingProducts.forEach((produto: BlingReturnProduct) => {
       if(orcamentoPayload.produtos){
         let produtoOrcamento = orcamentoPayload.produtos.find(x => x.codigo == produto.codigo);
         if(produtoOrcamento){
@@ -109,7 +110,7 @@ export class WppService {
       }            
     });
 
-    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(({produto}: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${produto.quantidade > produto.estoqueAtual ? "FORA DE ESTOQUE" :this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((total:number, {produto}:BlingReturnProduct) => produto.quantidade > produto.estoqueAtual ? total + 0 : total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
+    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map((produto: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${produto.quantidade > produto.estoqueAtual ? "*FORA DE ESTOQUE*" :this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((total:number, produto:BlingReturnProduct) => produto.quantidade > produto.estoqueAtual ? total + 0 : total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
 
     const options = {
       method: 'POST',
@@ -506,10 +507,3 @@ export class WppService {
     }
   }
 }
-
-
-/* TODO: Criar a nova função de webhook, vai continuar com a primeira msg de confirmação de envio, mas a próxima será a de pdf de orçamento
-* Mas caso não tenha um dos produtos no estoque, enviar na msg debaixo de confirmação avisando que não temos o produto em estoque
-* Após ele confirmar ou não, finalizar o processo de orçamento,
-* Válidar msgs de alerta nos templates do facebook
-*/
