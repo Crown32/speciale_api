@@ -131,6 +131,10 @@
             padding: 10px 0
         }
 
+        body{
+            margin-left:50px ;
+        }
+
         body,
         td {
             font-family: Arial, Helvetica, sans-serif;
@@ -781,21 +785,21 @@
         <div style="width: 700px; text-align: center;">
             <div id="content-area">
                 <div style="display: flex; width: 100%; justify-content: space-between;">
-                    <div>
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
                         <div style="text-align: left;"><img src="orcamento_logo.png"
                                 style="max-height: 112px; max-width: 200px;" class="center-image img-responsive"></div>
-                        <div style="text-align: right;">Speciale Clean<br>Avenida Jair Rodrigues Vale, Nº 230,
+                                <h2 style="text-align:center; margin-top: 80px;">Proposta Nº {NUMERO_PROPOSTA_HEADING}</h2>
+                        <div style="text-align: right;  margin-top: 20px;">Speciale Clean<br>Avenida Jair Rodrigues Vale, Nº 230,
                             Loja<br>32260080 -
                             Contagem, MG<br>Telefone: (31) 3361-3132<br>CNPJ: 10.858.844/0001-21<br></div>
                     </div>
-                    <h2 style="text-align:center;">Proposta Nº 10</h2>
                 </div>
                 <h4>Para</h4>
                 <table style="text-align: left; width:100%;">
                     <tbody>
                         <tr>
                             <td>
-                                <div class="divBorda" style="height: 75px;">TESTE TESTE</div>
+                                <div class="divBorda" style="height: 75px;">{CLIENTE}</div>
                             </td>
                             <td width="20px"></td>
                             <td width="30%" valign="top">
@@ -803,11 +807,11 @@
                                     <tbody>
                                         <tr>
                                             <th>Número da Proposta</th>
-                                            <td>10</td>
+                                            <td>{NUMERO_PROPOSTA}</td>
                                         </tr>
                                         <tr>
                                             <th>Data</th>
-                                            <td>23/02/2023</td>
+                                            <td>{DATA}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -832,7 +836,8 @@
                                     <th class="right">Preço un.</th>
                                     <th class="right">Preço total</th>
                                 </tr>
-                                <tr>
+                                {ITENS}
+                                <!-- <tr>
                                     <td style="word-break: break-all;">PRODUTO_TESTE</td>
                                     <td class="left" style="white-space: nowrap;">PRODUTO_TESTE</td>
                                     <td class="right">Un</td>
@@ -842,18 +847,7 @@
                                     <td width="10%" class=" right">0,00</td>
                                     <td class="right">10.000,0000</td>
                                     <td class="right">0,00</td>
-                                </tr>
-                                <tr>
-                                    <td style="word-break: break-all;">GLIZZ 500ML</td>
-                                    <td class="left" style="white-space: nowrap;">0000000000147</td>
-                                    <td class="right">UN</td>
-                                    <td class="right">5,00000</td>
-                                    <td class="right">0,0000</td>
-                                    <td class="right">0,0000</td>
-                                    <td width="10%" class=" right">0,00</td>
-                                    <td class="right">10.000.000,0000</td>
-                                    <td class="right">0,00</td>
-                                </tr>
+                                </tr> -->
                             </tbody>
                         </table>
                     </div>
@@ -870,13 +864,13 @@
                             <th style="text-align: right;">Total da proposta</th>
                         </tr>
                         <tr>
-                            <td style="text-align: right;">2,00</td>
-                            <td style="text-align: right;">15</td>
+                            <td style="text-align: right;">{NUMERO_ITENS}</td>
+                            <td style="text-align: right;">{QUANTIDADE_TOTAL}</td>
                             <td style="text-align: right;">0,00</td>
                             <td style="text-align: right;">0,00</td>
-                            <td style="text-align: right;">999.999.999,99</td>
+                            <td style="text-align: right;">{PRECO_TOTAL}</td>
                             <td style="text-align: right;">0,00</td>
-                            <td style="text-align: right;">999.999.999,99</td>
+                            <td style="text-align: right;">{TOTAL_PROPOSTA}</td>
                         </tr>
                     </tbody>
                 </table><br>

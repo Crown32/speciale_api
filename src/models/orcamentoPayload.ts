@@ -10,4 +10,5 @@ export interface OrcamentoPayload {
   messageId?: string;
   closed?: boolean;
   propostaBlingId?: Number;
+  propostaBlingNumber?: Number;
 }
