@@ -244,7 +244,7 @@ export class WppService {
   }
 
   //Mensagem de alerta para o vendedor quando o cliente aceita o orçamento
-  async alertaOrcamentoAceito(propostaComercialId: string, orcamentoPayload: OrcamentoPayload) {
+  async alertaOrcamentoAceito(orcamentoPayload: OrcamentoPayload) {
 
     const options = {
       method: 'POST',
@@ -277,7 +277,7 @@ export class WppService {
                 },
                 {
                   "type": "text",
-                  "text": propostaComercialId
+                  "text": "null"
                 },
               ]
             }
@@ -454,10 +454,10 @@ export class WppService {
             this.enviarOrcamento(orcamentoPayload).then(async (response: any) => {
               orcamentoPayload.status = OrcamentoStatus.ORCAMENTO_SENT;
               orcamentoPayload.messageId = response.messages[0].id;
-              // const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
-              // orcamentoPayload.propostaBlingId = blingResponse[0].id;
+              const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
+              orcamentoPayload.propostaBlingId = blingResponse[0].id;
               this.mongoService.updateOrcamento(messageId, orcamentoPayload);
-              // await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
+              await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
               console.log("Orçamento enviado");
               res.status(200).send("EVENT_RECEIVED");
             });
@@ -465,10 +465,8 @@ export class WppService {
             this.orcamentoAcceptedMessage(orcamentoPayload).then(async (response: any) => {
               orcamentoPayload.status = OrcamentoStatus.ACCEPTED;
               orcamentoPayload.messageId = response.messages[0].id;
-              // const blingResponse: any = await this.blingService.createPedidoDeVenda(orcamentoPayload);
-              // orcamentoPayload.vendaBlingId = blingResponse[0].idPedido;
               this.mongoService.updateOrcamento(messageId, orcamentoPayload);
-              // await this.alertaOrcamentoAceito(blingResponse[0].idPedido, orcamentoPayload);
+              await this.alertaOrcamentoAceito(orcamentoPayload);
               console.log("Orçamento aceito");
               res.status(200).send("EVENT_RECEIVED");
             });
