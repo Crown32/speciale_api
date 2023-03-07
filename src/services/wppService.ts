@@ -92,11 +92,14 @@ export class WppService {
   }
 
   //Mensagem antiga de enviar orçamento -> Nova é de PDF
+  //Adicionar aviso de falta de estoque -> Implementar para PDF no futuro
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
-    const blingProducts: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);   
+    const blingReturn: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos); 
     
-    blingProducts.retorno.produtos.forEach(({produto}: BlingReturnProduct) => {
+    const blingProducts = blingReturn[0].retorno.produtos;
+    
+    blingProducts.forEach(({produto}: BlingReturnProduct) => {
       if(orcamentoPayload.produtos){
         let produtoOrcamento = orcamentoPayload.produtos.find(x => x.codigo == produto.codigo);
         if(produtoOrcamento){
@@ -106,7 +109,7 @@ export class WppService {
       }            
     });
 
-    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.retorno.produtos.map(({produto}: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.retorno.produtos.reduce((total:number, {produto}:BlingReturnProduct) => total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
+    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(({produto}: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((total:number, {produto}:BlingReturnProduct) => total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
 
     const options = {
       method: 'POST',
