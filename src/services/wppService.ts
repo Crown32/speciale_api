@@ -93,10 +93,10 @@ export class WppService {
   //Mensagem antiga de enviar orçamento -> Nova é de PDF
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
-    const blingProducts: any[] = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);
+    const blingProducts: any[] = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);    
 
-    console.log("PRODUTOS PUROS: "+blingProducts.toString());
-    
+    this.mongoService.saveTestes(blingProducts);
+    console.log(blingProducts);
 
     blingProducts.forEach(p => {
       if(orcamentoPayload.produtos){
@@ -105,8 +105,6 @@ export class WppService {
         p.preco = p.preco * p.quantidade;
       }            
     });
-
-    console.log("PRODUTOS FORMATADOS: "+blingProducts.toLocaleString());
 
     const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(p => `- ${p.quantidade}x ${p.descricao} -> ${this.formatter.format(parseFloat(p.preco)).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((a, b) => a + Number(b.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
 
@@ -431,17 +429,17 @@ export class WppService {
   async webhook(req: Request, res: Response) {
     const body = req.body;
 
-    if(!body.entry[0].changes[0].value.messages || !body.entry[0].changes[0].value.messages[0].button){
+    if(!body.entry[0].changes[0].value.messages){
       console.log(body.entry[0].changes[0].value.messages);
       console.log("Mensagem não é do tipo resposta de botão");
       res.status(200).send("EVENT_RECEIVED");
       return;
     }
 
-    const messageResponse = body.entry[0].changes[0].value.messages[0].button.text    
+    const messageResponse = body.entry[0].changes[0].value.messages[0]    
     const messageId = body.entry[0].changes[0].value.messages[0].context.id
 
-    if(String(messageResponse).toLowerCase() === 'sim') {
+    if((messageResponse.button && String(messageResponse.button.text).toLowerCase() === 'sim') || (messageResponse.interactive.button_reply && String(messageResponse.interactive.button_reply.text).toLowerCase() === 'sim')){
       //Aceito
       this.mongoService.getOrcamento(messageId).then((orcamento: any) => {
         if (orcamento) {
