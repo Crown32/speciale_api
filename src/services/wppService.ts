@@ -95,10 +95,7 @@ export class WppService {
   //Adicionar aviso de falta de estoque -> Implementar para PDF no futuro
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
-    const blingProducts: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos); 
-
-    console.log(blingProducts);
-    
+    const blingProducts: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);     
     
     blingProducts.forEach((produto: BlingReturnProduct) => {
       if(orcamentoPayload.produtos){
