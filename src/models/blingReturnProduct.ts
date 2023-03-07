@@ -4,5 +4,6 @@ export interface BlingReturnProduct {
     quantidade: number; 
     preco: number;
     descricao: string;
+    estoqueAtual: number;
   }; 
 }

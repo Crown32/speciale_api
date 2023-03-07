@@ -109,7 +109,7 @@ export class WppService {
       }            
     });
 
-    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(({produto}: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((total:number, {produto}:BlingReturnProduct) => total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
+    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map(({produto}: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${produto.quantidade > produto.estoqueAtual ? "FORA DE ESTOQUE" :this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((total:number, {produto}:BlingReturnProduct) => produto.quantidade > produto.estoqueAtual ? total + 0 : total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
 
     const options = {
       method: 'POST',
@@ -441,9 +441,6 @@ export class WppService {
 
     const messageResponse = body.entry[0].changes[0].value.messages[0]    
     const messageId = body.entry[0].changes[0].value.messages[0].context.id
-
-    //FIXME: REMOVER ANTES DE SUBIR PARA PROD
-    this.mongoService.saveTestes(messageResponse);
 
     if((messageResponse.button && String(messageResponse.button.text).toLowerCase() === 'sim') || (messageResponse.interactive && String(messageResponse.interactive.button_reply.title).toLowerCase() === 'sim')){
       //Aceito
