@@ -54,16 +54,21 @@ export class BlingService{
     });
 
     const data: ICommercialProposal = {
+      dataProximoContato: new Date().toISOString().split('T')[0],
       cliente: {
         nome: orcamentoPayload.nome,
         fone: orcamentoPayload.numeroTelefone
       },
       itens: produtos
-    };
+    };    
 
-    const response = await bling.commercialProposals().create(data);
-
-    return response;
+    try {
+      const response = await bling.commercialProposals().create(data);
+      return response;
+    } catch (error:any) {
+      console.log(error.data.errors);
+      return [];
+    }
   }
 
 }

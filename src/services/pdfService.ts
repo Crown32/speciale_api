@@ -53,9 +53,6 @@ export class PdfService {
 
     const pdf = await html_to_pdf.generatePdf(file, options);
 
-    // fs.writeFileSync('./src/templates/templateFinal.pdf', pdf);
-    // fs.writeFileSync('./src/templates/templateFinal.html', htmlFinal);
-
     return pdf;
   }
 }

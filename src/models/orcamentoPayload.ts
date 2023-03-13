@@ -11,4 +11,5 @@ export interface OrcamentoPayload {
   closed?: boolean;
   propostaBlingId?: Number;
   propostaBlingNumber?: Number;
+  wppPdfId?: string;
 }

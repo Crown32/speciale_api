@@ -7,12 +7,16 @@ import { BlingService } from './blingService';
 import { Utils } from '../utils/utils';
 import { Config } from '../configs/config';
 import { BlingReturnProduct } from '../models/blingReturnProduct';
+import { PdfService } from './pdfService';
+import FormData from 'form-data';
+
 export class WppService {
 
   constructor() { }
 
   mongoService = new MongoService(new Config());
   blingService = new BlingService(new Config());
+  pdfService = new PdfService();
 
   formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -95,7 +99,7 @@ export class WppService {
   //Adicionar aviso de falta de estoque -> Implementar para PDF no futuro
   async enviarOrcamento(orcamentoPayload: OrcamentoPayload) { 
 
-    const blingProducts: any = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);     
+    const blingProducts: BlingReturnProduct[] = await this.blingService.getProdutosByCodigo(orcamentoPayload.produtos);     
     
     blingProducts.forEach((produto: BlingReturnProduct) => {
       if(orcamentoPayload.produtos){
@@ -107,9 +111,44 @@ export class WppService {
       }            
     });
 
-    const message = `Aqui está seu orçamento 😁\n\n${blingProducts.map((produto: BlingReturnProduct) => `- ${produto.quantidade}x ${produto.descricao} -> ${produto.quantidade > produto.estoqueAtual ? "*FORA DE ESTOQUE*" :this.formatter.format(produto.preco).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')}`).join('\n')} \n\n Total: ${this.formatter.format(Number(blingProducts.reduce((total:number, produto:BlingReturnProduct) => produto.quantidade > produto.estoqueAtual ? total + 0 : total + Number(produto.preco), 0))).replace(/^(\D+)/, '$1 ').replace(/\s+/, ' ')} \n\nDeseja confirmar o orçamento?`;
+    const pdf = await this.pdfService.createPdf(blingProducts, orcamentoPayload);
 
-    const options = {
+    const formData = new FormData();
+
+    formData.append('file', pdf, `orcamento_${orcamentoPayload.nome}.pdf`);
+    formData.append('messaging_product', 'whatsapp');
+
+    const optionsUploadMedia = {
+      method: 'POST',
+      url: 'https://graph.facebook.com/v15.0/100354289646333/media',
+      headers: {
+        'Content-Type': `multipart/form-data`,
+        'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+      },
+      data: formData
+    }
+
+    const optionsSendOrcamento = {
+      method: 'POST',
+      url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.WPP_API_KEY
+      },
+      data: {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": orcamentoPayload.numeroTelefone,
+        "type": "document",
+        "document": {
+          "id": null,
+          "caption": "",
+          "filename": `orcamento_${orcamentoPayload.nome}.pdf`,
+        }
+      }
+    }
+
+    const optionsConfirmMessage = {
       method: 'POST',
       url: 'https://graph.facebook.com/v15.0/100354289646333/messages',
       headers: {
@@ -123,7 +162,7 @@ export class WppService {
         "interactive": {
           "type": "button",
           "body": {
-            "text": message
+            "text": "Aqui está seu orçamento 😁\n\nGostaria de confirmar o pedido?"
           },
           "action": {
             "buttons": [
@@ -148,8 +187,14 @@ export class WppService {
     }
 
     try {
-      const response = await axios.request(options)
-      return response.data;
+      const responseUploadMedia = await axios.request(optionsUploadMedia)
+      
+      optionsSendOrcamento.data.document.id = responseUploadMedia.data.id;
+
+      const responseSendOrcamento = await axios.request(optionsSendOrcamento)
+      const responseConfirmMessage = await axios.request(optionsConfirmMessage)
+      
+      return responseConfirmMessage.data;
     } catch (error) {
       return error;
     }
@@ -446,10 +491,10 @@ export class WppService {
         if (orcamento) {
           const orcamentoPayload = orcamento as OrcamentoPayload;
           if (orcamentoPayload.status === OrcamentoStatus.CONTACTED) {
-            this.enviarOrcamento(orcamentoPayload).then(async (response: any) => {
+            this.enviarOrcamento(orcamentoPayload).then(async (response: any) => {      
               orcamentoPayload.status = OrcamentoStatus.ORCAMENTO_SENT;
               orcamentoPayload.messageId = response.messages[0].id;
-              const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);
+              const blingResponse = await this.blingService.createPropostaComercial(orcamentoPayload);              
               orcamentoPayload.propostaBlingId = blingResponse[0].id;
               this.mongoService.updateOrcamento(messageId, orcamentoPayload);
               await this.alertaOrcamentoSolicitado(blingResponse[0].id, orcamentoPayload);
