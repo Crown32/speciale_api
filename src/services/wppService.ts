@@ -26,7 +26,11 @@ export class WppService {
   //Mensagem de confirmação de solicitação de orçamento
   async orcamentoConfirmMessage(req: Request, res: Response) {   
 
-    const phoneFormatted = req.body.billing.phone.replace(/\D/g, '');
+    let phoneFormatted = req.body.billing.phone.replace(/\D/g, '');
+
+    if(!phoneFormatted.startsWith('55')){
+      phoneFormatted = '55' + phoneFormatted;
+    }
 
     const orcamentoPayload: OrcamentoPayload = {
       nome: req.body.billing.first_name + ' ' + req.body.billing.last_name,
